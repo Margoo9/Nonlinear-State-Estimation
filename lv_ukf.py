@@ -83,14 +83,14 @@ def h_cv(x):
 measurement_noise_std = 1
 
 # UKF Model
-points = MerweScaledSigmaPoints(2, alpha=1e-3, beta=2., kappa=1.0, sqrt_method=sqrt_func)
-# points = MerweScaledSigmaPoints(2, alpha=0.1, beta=2., kappa=0.0, sqrt_method=sqrt_func)
+# points = MerweScaledSigmaPoints(2, alpha=1e-3, beta=2., kappa=1.0, sqrt_method=sqrt_func)
+points = MerweScaledSigmaPoints(2, alpha=0.1, beta=2., kappa=0.0, sqrt_method=sqrt_func)
 ukf = UKF(dim_x=2, dim_z=2, fx=f_cv, hx=h_cv, dt=dt, points=points)
 ukf.P = np.diag([10, 10])  # Initialize with larger values
 ukf.x = np.array([theta0, omega0])
 ukf.R = np.diag([measurement_noise_std ** 2, measurement_noise_std ** 2])
-ukf.Q = Q_discrete_white_noise(dim=2, dt=dt, var=10, block_size=1)
-# ukf.Q = np.eye(2)
+# ukf.Q = Q_discrete_white_noise(dim=2, dt=dt, var=10, block_size=1)
+ukf.Q = np.eye(2)
 
 # Simulation loop
 kf_theta_values = []
