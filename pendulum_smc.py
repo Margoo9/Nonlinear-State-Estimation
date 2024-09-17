@@ -12,28 +12,6 @@ from multiprocessing import freeze_support
 
 
 def main():
-    b = 0.3
-    c = 4.0
-
-    size = 100
-    time_lv = 15
-    t = np.linspace(0, time_lv, size)
-
-    X0 = [0.75 * np.pi, 0.0]
-
-    def dX_dt(X, t, b, c):
-        return [X[1], -b * X[1] - c * np.sin(X[0])]
-
-    def competition_model(rng, a, b, size=None):
-        return odeint(dX_dt, y0=X0, t=t, rtol=0.01, args=(a, b))
-
-    def add_noise(a, b):
-        noise = np.random.normal(size=(size, 2))
-        simulated = competition_model(None, a, b) + noise
-        return simulated
-    observed = add_noise(b, c)
-    true_state = competition_model(None, b, c)
-
     start_time = time.time()
 
     with pm.Model() as model_lv:
@@ -41,7 +19,7 @@ def main():
         a = pm.Uniform("b", lower=-10, upper=10)
         b = pm.Uniform("c", lower=-10, upper=10)
 
-        sim = pm.Simulator("sim", competition_model, params=(a, b), epsilon=1, observed=observed)
+        sim = pm.Simulator("sim", pendulum_solved, params=(a, b), epsilon=1, observed=observed_pend)
         idata_lv = pm.sample_smc()
 
     sampling_time = time.time() - start_time
@@ -53,16 +31,16 @@ def main():
     plt.savefig('obj1_posterior_smc.pdf')
     plt.show()
     posterior = idata_lv.posterior.stack(samples=("draw", "chain"))
-    predictions = competition_model(None, posterior["b"].mean(), posterior["c"].mean())
+    predictions = pendulum_solved(None, posterior["b"].mean(), posterior["c"].mean())
     fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
-    ax1.plot(observed[:, 0], 'x', label='Pomiary')
-    ax1.plot(true_state[:, 0], 'b', label='Modelowe wartości')
+    ax1.plot(observed_pend[:, 0], 'x', label='Pomiary')
+    ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
     ax1.plot(predictions[:, 0], label='Estymata SMC')
     ax1.legend(loc='upper right')
     ax1.set_ylabel('Kąt odchylenia')
 
-    ax2.plot(observed[:, 1], 'x', label='Pomiary')
-    ax2.plot(true_state[:, 1], 'g', label='Modelowe wartości')
+    ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
+    ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata SMC')
 
     plt.xlabel('Czas')
@@ -70,20 +48,19 @@ def main():
     ax2.set_ylabel('Prędkość kątowa')
     plt.savefig('obj1_smc_predictions.pdf')
 
-    plt.show()
+    # plt.show()
 
-    rms = mean_squared_error(true_state, predictions, squared=False)
+    rms = mean_squared_error(true_state_pend, predictions, squared=False)
     print(f'RMSE of pendulum predictions using SMC: {rms}')
     print(f'Sampling time of pendulum using SMC is: {sampling_time}')
 
-    return observed, predictions, rms
+    return observed_pend, predictions, rms
 
 
 if __name__ == '__main__':
     freeze_support()
     # main()
 
-    # Run the simulation 10 times
     num_runs = 10
     all_observed = []
     all_predictions = []
