@@ -1,74 +1,39 @@
-from multiprocessing import freeze_support, Pool
 import arviz as az
 import matplotlib.pyplot as plt
+from multiprocessing import freeze_support, Pool
 import numpy as np
 import pymc as pm
-import time
-from scipy.integrate import odeint
-from sklearn.metrics import mean_squared_error
-import pytensor.tensor as pt
 from pymc.ode import DifferentialEquation
 from pytensor.compile.ops import as_op
+import pytensor.tensor as pt
+from scipy.integrate import odeint
+from sklearn.metrics import mean_squared_error
+import time
 
 # np.random.seed(42)
 
 
 def slice():
-    # Definition of parameters
-    b = 0.3
-    c = 4.0
-
-    size = 100
-    time_lv = 15
-    t = np.linspace(0, time_lv, size)
-
-    X0 = [0.75 * np.pi, 0.0]
-
-    def dX_dt(X, t, theta):
-        b = theta[0]
-        c = theta[1]
-        return [X[1], -b * X[1] - c * np.sin(X[0])]
-
-    # simulator function
-    def competition_model(rng, theta, size=None):
-        return odeint(dX_dt, y0=X0, t=t, rtol=0.01, args=(theta,))
-
-    # function for generating noisy data to be used as observed data.
-    def add_noise(a, b):
-        theta = [a, b]
-        noise = np.random.normal(size=(size, 2))
-        simulated = competition_model(None, theta) + noise
-        return simulated
-
-    # plotting observed data.
-    theta = [b, c, 0.75 * np.pi, 0.0]
-    data = add_noise(b, c)
-    x_y = competition_model(None, theta)
-
     start_time = time.time()
 
-    # decorator with input and output types a Pytensor double float tensors
     @as_op(itypes=[pt.dvector], otypes=[pt.dmatrix])
-    def pytensor_forward_model_matrix(theta):
-        return odeint(func=dX_dt, y0=X0, t=t, rtol=0.01, args=(theta,))
+    def pytensor_forward_model_matrix(theta_pend):
+        return odeint(func=pendulum_equations, y0=init_point_pendulum, t=t_pend, rtol=0.01, args=(theta_pend,))
 
     with pm.Model() as model:
         b = pm.Normal("b")
         c = pm.Normal("c")
         sigma = pm.HalfNormal("sigma", 10)
 
-        # Ode solution function
         ode_solution = pytensor_forward_model_matrix(
             pm.math.stack([b, c])
         )
 
-        # Likelihood
         pm.Normal("Y_obs", mu=ode_solution, sigma=sigma, observed=data)
 
     pm.model_to_graphviz(model=model)
     plt.show()
 
-    # Inference!
     with model:
         trace_slice = pm.sample(step=[pm.Slice()], tune=2000, draws=2000)
 
@@ -83,16 +48,16 @@ def slice():
 
     posterior = trace_slice.posterior.stack(samples=("draw", "chain"))
     theta_posterior = [posterior["b"].mean(), posterior["c"].mean()]
-    predictions = competition_model(None, theta_posterior)
+    predictions = pendulum_solved(None, theta_posterior)
     fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
-    ax1.plot(data[:, 0], 'x', label='Pomiary')
-    ax1.plot(x_y[:, 0], 'b', label='Modelowe wartości')
+    ax1.plot(observed_pend[:, 0], 'x', label='Pomiary')
+    ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
     ax1.plot(predictions[:, 0], label='Estymata - próbkowanie przekrojów')
     ax1.legend(loc='upper right')
     ax1.set_ylabel('Kąt odchylenia')
 
-    ax2.plot(data[:, 1], 'x', label='Pomiary')
-    ax2.plot(x_y[:, 1], 'g', label='Modelowe wartości')
+    ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
+    ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - próbkowanie przekrojów')
 
     plt.xlabel('Czas')
@@ -102,63 +67,30 @@ def slice():
 
     # plt.show()
 
-    rms = mean_squared_error(x_y, predictions, squared=False)
+    rms = mean_squared_error(true_state_pend, predictions, squared=False)
     print(f'RMSE of pendulum predictions using Slice: {rms}')
     print(f'Sampling time of pendulum using slice is: {sampling_time}')
 
-    return trace_slice, data, predictions, rms, x_y
+    return trace_slice, observed_pend, predictions, rms, true_state_pend
 
 
 def metropolis():
-    b = 0.3
-    c = 4.0
-
-    size = 100
-    time_lv = 15
-    t = np.linspace(0, time_lv, size)
-
-    X0 = [0.75 * np.pi, 0.0]
-
-    def dX_dt(X, t, theta):
-        b = theta[0]
-        c = theta[1]
-        return [X[1], -b * X[1] - c * np.sin(X[0])]
-
-    # simulator function
-    def competition_model(rng, theta, size=None):
-        return odeint(dX_dt, y0=X0, t=t, rtol=0.01, args=(theta,))
-
-    # function for generating noisy data to be used as observed data.
-    def add_noise(a, b):
-        theta = [a, b]
-        noise = np.random.normal(size=(size, 2))
-        simulated = competition_model(None, theta) + noise
-        return simulated
-
-    # plotting observed data.
-    theta = [b, c, 0.75 * np.pi, 0.0]
-    data = add_noise(b, c)
-    x_y = competition_model(None, theta)
-
     start_time = time.time()
 
-    # decorator with input and output types a Pytensor double float tensors
     @as_op(itypes=[pt.dvector], otypes=[pt.dmatrix])
-    def pytensor_forward_model_matrix(theta):
-        return odeint(func=dX_dt, y0=X0, t=t, rtol=0.01, args=(theta,))
+    def pytensor_forward_model_matrix(theta_pend):
+        return odeint(func=pend_equations, y0=init_point_pendulum, t=t_pend, rtol=0.01, args=(theta_pend,))
 
     with pm.Model() as model:
         b = pm.Normal("b")
         c = pm.Normal("c")
         sigma = pm.HalfNormal("sigma", 10)
 
-        # Ode solution function
         ode_solution = pytensor_forward_model_matrix(
             pm.math.stack([b, c])
         )
 
-        # Likelihood
-        pm.Normal("Y_obs", mu=ode_solution, sigma=sigma, observed=data)
+        pm.Normal("Y_obs", mu=ode_solution, sigma=sigma, observed=observed_pend)
 
     pm.model_to_graphviz(model=model)
     plt.show()
@@ -177,16 +109,16 @@ def metropolis():
 
     posterior = trace_slice.posterior.stack(samples=("draw", "chain"))
     theta_posterior = [posterior["b"].mean(), posterior["c"].mean()]
-    predictions = competition_model(None, theta_posterior)
+    predictions = pendulum_solved(None, theta_posterior)
     fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
-    ax1.plot(data[:, 0], 'x', label='Pomiary')
-    ax1.plot(x_y[:, 0], 'b', label='Modelowe wartości')
+    ax1.plot(observed_pend[:, 0], 'x', label='Pomiary')
+    ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
     ax1.plot(predictions[:, 0], label='Estymata - algorytm Metropolisa')
     ax1.legend(loc='upper right')
     ax1.set_ylabel('Kąt odchylenia')
 
-    ax2.plot(data[:, 1], 'x', label='Pomiary')
-    ax2.plot(x_y[:, 1], 'g', label='Modelowe wartości')
+    ax2.plot(served_pend[:, 1], 'x', label='Pomiary')
+    ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - algorytm Metropolisa')
 
     plt.xlabel('Czas')
@@ -196,54 +128,23 @@ def metropolis():
 
     # plt.show()
 
-    rms = mean_squared_error(x_y, predictions, squared=False)
+    rms = mean_squared_error(true_state_pend, predictions, squared=False)
     print(f'RMSE of pendulum predictions using Metropolis: {rms}')
     print(f'Sampling time of pendulum using Metropolis is: {sampling_time}')
 
-    return trace_slice, data, predictions, rms, x_y
+    return trace_slice, observed_pend, predictions, rms, true_state_pend
 
 
 def nuts():
-    b = 0.3
-    c = 4.0
-
-    size = 100
-    time_lv = 15
-    t = np.linspace(0, time_lv, size)
-
-    X0 = [0.75 * np.pi, 0.0]
-
-    def dX_dt(X, t, theta):
-        b = theta[0]
-        c = theta[1]
-        return [X[1], -b * X[1] - c * np.sin(X[0])]
-
     ode_model = DifferentialEquation(
-        func=dX_dt, times=t, n_states=2, n_theta=2, t0=0
+        func=pendulum_equations, times=t_pend, n_states=2, n_theta=2, t0=0
     )
-
-    # simulator function
-    def competition_model(rng, theta, size=None):
-        return odeint(dX_dt, y0=X0, t=t, rtol=0.01, args=(theta,))
-
-    # function for generating noisy data to be used as observed data.
-    def add_noise(a, b):
-        theta = [a, b]
-        noise = np.random.normal(size=(size, 2))
-        simulated = competition_model(None, theta) + noise
-        return simulated
-
-    # plotting observed data.
-    theta = [b, c, 0.75 * np.pi, 0.0]
-    data = add_noise(b, c)
-    x_y = competition_model(None, theta)
 
     start_time = time.time()
 
-    # decorator with input and output types a Pytensor double float tensors
     @as_op(itypes=[pt.dvector], otypes=[pt.dmatrix])
-    def pytensor_forward_model_matrix(theta):
-        return odeint(func=dX_dt, y0=X0, t=t, rtol=0.01, args=(theta,))
+    def pytensor_forward_model_matrix(theta_pend):
+        return odeint(func=pendulum_equations, y0=init_point_pendulum, t=t_pend, rtol=0.01, args=(theta_pend,))
 
     with pm.Model() as model:
 
@@ -253,8 +154,7 @@ def nuts():
 
         ode_solution = ode_model(y0=X0, theta=[b, c])
 
-        # Likelihood
-        pm.Normal("Y_obs", mu=ode_solution, sigma=sigma, observed=data)
+        pm.Normal("Y_obs", mu=ode_solution, sigma=sigma, observed=observed_pend)
 
     pm.model_to_graphviz(model=model)
     plt.show()
@@ -274,16 +174,16 @@ def nuts():
 
     posterior = trace_slice.posterior.stack(samples=("draw", "chain"))
     theta_posterior = [posterior["b"].mean(), posterior["c"].mean()]
-    predictions = competition_model(None, theta_posterior)
+    predictions = pendulum_solved(None, theta_posterior)
     fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
-    ax1.plot(data[:, 0], 'x', label='Pomiary')
-    ax1.plot(x_y[:, 0], 'b', label='Modelowe wartości')
+    ax1.plot(observed_pend[:, 0], 'x', label='Pomiary')
+    ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
     ax1.plot(predictions[:, 0], label='Estymata - algorytm NUTS')
     ax1.legend(loc='upper right')
     ax1.set_ylabel('Kąt odchylenia')
 
-    ax2.plot(data[:, 1], 'x', label='Pomiary')
-    ax2.plot(x_y[:, 1], 'g', label='Modelowe wartości')
+    ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
+    ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - algorytm NUTS')
 
     plt.xlabel('Czas')
@@ -293,11 +193,11 @@ def nuts():
 
     # plt.show()
 
-    rms = mean_squared_error(x_y, predictions, squared=False)
+    rms = mean_squared_error(true_state_pend, predictions, squared=False)
     print(f'RMSE of pendulum predictions using NUTS: {rms}')
     print(f'Sampling time of pendulum using NUTS is: {sampling_time}')
 
-    return trace_slice, data, predictions, rms, x_y
+    return trace_slice, observed_pend, predictions, rms, true_state_pend
 
 
 def run_simulation_slice(_):
@@ -404,3 +304,4 @@ if __name__ == '__main__':
 
     print(f'Average RMSE of pendulum predictions using nuts: {average_rmse_nuts}')
     plt.show()
+    
