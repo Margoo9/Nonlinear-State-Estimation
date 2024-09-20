@@ -2,7 +2,6 @@ import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 import pymc as pm
-from scipy.integrate import odeint
 from sklearn.metrics import mean_squared_error
 import time
 from multiprocessing import freeze_support
@@ -11,7 +10,7 @@ from multiprocessing import freeze_support
 # np.random.seed(42)
 
 
-def main():
+def pend_smc(observed_pend, true_state_pend, pendulum_equations, pendulum_solved, t_pend, theta_pend, init_point_pendulum):
     start_time = time.time()
 
     with pm.Model() as model_lv:
@@ -54,43 +53,5 @@ def main():
     print(f'RMSE of pendulum predictions using SMC: {rms}')
     print(f'Sampling time of pendulum using SMC is: {sampling_time}')
 
-    return observed_pend, predictions, rms
-
-
-if __name__ == '__main__':
-    freeze_support()
-    # main()
-
-    num_runs = 10
-    all_observed = []
-    all_predictions = []
-    all_rmse = []
-
-    for _ in range(num_runs):
-        observed, predictions, rms = main()
-        all_observed.append(observed)
-        all_predictions.append(predictions)
-        all_rmse.append(rms)
-
-    # Calculate averages
-    average_observed = np.mean(all_observed, axis=0)
-    average_predictions = np.mean(all_predictions, axis=0)
-    average_rmse = np.mean(all_rmse)
-
-    # Plot average results
-    fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
-    ax1.plot(average_observed[:, 0], 'x', label='Średnie Pomiary')
-    ax1.plot(average_predictions[:, 0], label='Średnie Estymaty SMC')
-    ax1.legend(loc='upper right')
-    ax1.set_ylabel('Kąt odchylenia')
-
-    ax2.plot(average_observed[:, 1], 'x', label='Średnie Pomiary')
-    ax2.plot(average_predictions[:, 1], label='Średnie Estymaty SMC')
-
-    plt.xlabel('Czas')
-    ax2.legend(loc='upper right')
-    ax2.set_ylabel('Prędkość kątowa')
-    plt.savefig('average_smc_predictions.pdf')
-    plt.show()
-
-    print(f'Average RMSE of pendulum predictions using SMC: {average_rmse}')
+    # return observed_pend, predictions, rms
+    return predictions, sampling_time
