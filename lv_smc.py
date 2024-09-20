@@ -9,7 +9,7 @@ import time
 # np.random.seed(42)
 
 
-def main():
+def lv_smc(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
     start_time = time.time()
 
     with pm.Model() as model_lv:
@@ -26,10 +26,10 @@ def main():
 
     az.plot_trace(idata_lv)
     plt.savefig('obj2_trace_smc.pdf')
-    plt.show()
+    # plt.show()
     az.plot_posterior(idata_lv)
     plt.savefig('obj2_posterior_smc.pdf')
-    plt.show()
+    # plt.show()
 
     posterior = idata_lv.posterior.stack(samples=("draw", "chain"))
     predictions = lv_solved(None, posterior["alpha"].mean(), posterior["beta"].mean(), posterior["gamma"].mean(), posterior["delta"].mean())
@@ -54,8 +54,4 @@ def main():
     rms = mean_squared_error(true_state_lv, predictions, squared=False)
     print(f'RMSE of lotka-volterra predictions using SMC: {rms}')
     print(f'Sampling time of lotka-volterra using SMC is: {sampling_time}')
-
-
-if __name__ == '__main__':
-    freeze_support()
-    main()
+    return predictions, sampling_time
