@@ -14,7 +14,7 @@ import time
 # np.random.seed(42)
 
 
-def slice():
+def lv_slice(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
     start_time = time.time()
 
     def ode_model_resid(observed_lv, lv_equations, t_lv, theta_lv):
@@ -83,10 +83,12 @@ def slice():
 
     rms = mean_squared_error(true_state_lv, predictions, squared=False)
     print(f'RMSE of lotka-volterra predictions using Slice: {rms}')
-    print(f'Sampling time of lotka-volterra using SMC is: {sampling_time}')
+    print(f'Sampling time of lotka-volterra using Slice is: {sampling_time}')
+
+    return predictions, sampling_time
 
 
-def metropolis():
+def lv_metropolis(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
     start_time = time.time()
 
     def ode_model_resid(observed_lv, lv_equations, t_lv, theta_lv):
@@ -119,20 +121,19 @@ def metropolis():
     pm.model_to_graphviz(model=model)
     # plt.show()
 
-    # Inference!
     with model:
-        trace_slice = pm.sample(step=[pm.Metropolis()], tune=20000, draws=20000)
+        trace_metropolis = pm.sample(step=[pm.Metropolis()], tune=20000, draws=20000)
 
     sampling_time = time.time() - start_time
 
-    az.plot_trace(trace_slice)
+    az.plot_trace(trace_metropolis)
     plt.savefig('obj2_trace_metropolis.pdf')
     # plt.show()
-    az.plot_posterior(trace_slice)
+    az.plot_posterior(trace_metropolis)
     plt.savefig('obj2_posterior_metropolis.pdf')
     # plt.show()
 
-    posterior = trace_slice.posterior.stack(samples=("draw", "chain"))
+    posterior = trace_metropolis.posterior.stack(samples=("draw", "chain"))
     theta_posterior = [posterior["alpha"].mean(), posterior["beta"].mean(),
                                     posterior["gamma"].mean(), posterior["delta"].mean()]
     predictions = lv_solved(None, theta_posterior)
@@ -156,10 +157,11 @@ def metropolis():
 
     rms = mean_squared_error(true_state_lv, predictions, squared=False)
     print(f'RMSE of lotka-volterra predictions using Metropolis: {rms}')
-    print(f'Sampling time of lotka-volterra using SMC is: {sampling_time}')
+    print(f'Sampling time of lotka-volterra using Metropolis is: {sampling_time}')
+    return predictions, sampling_time
 
 
-def nuts():
+def lv_nuts(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
     ode_model = DifferentialEquation(
         func=lv_equations, times=t_lv, n_states=2, n_theta=4, t0=0
     )
@@ -201,18 +203,18 @@ def nuts():
 
     with model:
         # trace_slice = pm.sample(nuts_sampler="blackjax", tune=5000, draws=5000, progressbar=True)
-        trace_slice = pm.sample(step=pm.NUTS(), tune=2000, draws=2000, progressbar=True, callback=callback)
+        trace_nuts = pm.sample(step=pm.NUTS(), tune=2000, draws=2000, progressbar=True, callback=callback)
 
     sampling_time = time.time() - start_time
 
-    az.plot_trace(trace_slice)
+    az.plot_trace(trace_nuts)
     plt.savefig('obj2_trace_nuts.pdf')
     # plt.show()
-    az.plot_posterior(trace_slice)
+    az.plot_posterior(trace_nuts)
     plt.savefig('obj2_posterior_nuts.pdf')
     # plt.show()
 
-    posterior = trace_slice.posterior.stack(samples=("draw", "chain"))
+    posterior = trace_nuts.posterior.stack(samples=("draw", "chain"))
     theta_posterior = [posterior["alpha"].mean(), posterior["beta"].mean(),
                                     posterior["gamma"].mean(), posterior["delta"].mean()]
     predictions = lv_solved(None, theta_posterior)
@@ -236,11 +238,5 @@ def nuts():
 
     rms = mean_squared_error(true_state_lv, predictions, squared=False)
     print(f'RMSE of lotka-volterra predictions using NUTS: {rms}')
-    print(f'Sampling time of lotka-volterra using SMC is: {sampling_time}')
-
-
-if __name__ == '__main__':
-    freeze_support()
-    slice()
-    metropolis()
-    nuts()
+    print(f'Sampling time of lotka-volterra using NUTS is: {sampling_time}')
+    return predictions, sampling_time
