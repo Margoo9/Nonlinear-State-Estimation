@@ -2,6 +2,7 @@
 
 
 ##### Project goals
+
 The goal of this project was to do the task of state estimation of nonlinear dynamic objects using MCMC algorithms and compare obtained results with Unscented Kalman Filter and Particle Filter.
 
 ##### Technologies used

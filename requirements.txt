@@ -1,0 +1,15 @@
+arviz==0.15.1
+filterpy==1.4.5
+graphviz==0.20.1
+jax==0.4.13
+matplotlib==3.7.2
+numba==0.58.0
+numpy==1.22.1
+pymc==5.6.1
+pyodbc==4.0.39
+pytensor==2.12.3
+pywin32==305
+scikit-learn==1.3.1
+scipy==1.10.1
+seaborn==0.12.2
+Theano-PyMC==1.1.2
