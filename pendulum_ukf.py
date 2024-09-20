@@ -4,11 +4,15 @@ from scipy.integrate import odeint
 from filterpy.kalman import UnscentedKalmanFilter as UKF
 from filterpy.common import Q_discrete_white_noise
 from filterpy.kalman import MerweScaledSigmaPoints
+from params import init_point_pendulum, number_of_points_pendulum, t_pend, b, c,\
+                   init_point_lv, number_of_points_lv, t_lv, alpha, beta, gamma, delta
+
+from objects import add_gaussian_noise, pendulum_equations, pendulum_solved, \
+                    lv_equations, lv_solved, observed_pend, true_state_pend, theta_pend
 
 
-def pend_ukf():
-    g = 980  # cm/s^2
-    L = 3267  # cm
+def pend_ukf(observed_pend, true_state_pend, pendulum_equations, pendulum_solved, t_pend, theta_pend, init_point_pendulum):
+    dt = 0.1
 
     def run_simulation():
         def pendulum_eq(y, t, b, c):
@@ -27,6 +31,7 @@ def pend_ukf():
             return sol[-1]
 
         def h_cv(x):
+            L = 3267
             theta_ = x[0]
             pos_x = L * np.sin(theta_)
             pos_y = L * np.cos(theta_)
@@ -44,7 +49,7 @@ def pend_ukf():
         kf_theta_values = []
         kf_omega_values = []
 
-        for i in range(len(t)):
+        for i in range(len(t_pend)):
             theta = theta_values[i]
             omega = omega_values[i]
             center = np.array((L * np.sin(theta), L * np.cos(theta)))
@@ -55,53 +60,23 @@ def pend_ukf():
             kf_theta_values.append(ukf.x[0])
             kf_omega_values.append(ukf.x[1])
 
-        return data, kf_theta_values, kf_omega_values, theta_values, omega_values, sol
-
-
-    data, kf_theta_values, kf_omega_values, theta_values, omega_values, sol = run_simulation()
-
-    # Run the simulation 10 times
-    num_runs = 10
-    all_data = []
-    all_kf_theta_values = []
-    all_kf_omega_values = []
-    all_rmse = []
-
-    for _ in range(num_runs):
-        data, kf_theta_values, kf_omega_values, theta_values, omega_values, sol = run_simulation()
-        all_data.append(data)
-        all_kf_theta_values.append(kf_theta_values)
-        all_kf_omega_values.append(kf_omega_values)
-        # all_rmse.append(rms)
-
-    # Calculate averages
-    average_data = np.mean(all_data, axis=0)
-    average_kf_theta_values = np.mean(all_kf_theta_values, axis=0)
-    average_kf_omega_values = np.mean(all_kf_omega_values, axis=0)
-    # average_rmse = np.mean(all_rmse)
-
-    # Plot average results
-    plt.figure(figsize=(12, 6))
-    plt.subplot(2, 1, 1)
-    plt.plot(t_pend, sol[:, 0], label='Modelowe wartości')
-    plt.plot(t_pend, average_kf_theta_values, label='Estymata - algorytm UKF')
-    plt.scatter(t_pend, average_data[:, 0], label='Pomiary')
-    plt.xlabel('Czas')
-    plt.ylabel('Kąt odchylenia')
-    plt.legend()
-
-    plt.subplot(2, 1, 2)
-    plt.plot(t_pend, sol[:, 1], label='Modelowe wartości')
-    plt.plot(t_pend, average_kf_omega_values, label='Estymata - algorytm UKF')
-    plt.scatter(t_pend, average_data[:, 1], label='Pomiary')
-    plt.xlabel('Czas')
-    plt.ylabel('Prędkość kątowa')
-    plt.legend()
-
-    plt.tight_layout()
-    plt.savefig('average_kalman_filter_results.pdf')
-    plt.show()
-
-
-if __name__ == '__main':
-    pend_ukf()
+        plt.figure(figsize=(12, 6))
+        plt.subplot(2, 1, 1)
+        plt.plot(t_pend, sol[:, 0], 'b', label='Modelowe wartości')
+        plt.plot(t_pend, kf_theta_values, label='Estymata - algorytm UKF')
+        plt.plot(t_pend, data[:, 0], 'x', label='Pomiary')
+        plt.xlabel('Czas')
+        plt.ylabel('Kąt odchylenia')
+        plt.legend()
+    
+        plt.subplot(2, 1, 2)
+        plt.plot(t_pend, sol[:, 1], 'g', label='Modelowe wartości')
+        plt.plot(t_pend, kf_omega_values, label='Estymata - algorytm UKF')
+        plt.plot(t_pend, data[:, 1], 'x', label='Pomiary')
+        plt.xlabel('Czas')
+        plt.ylabel('Prędkość kątowa')
+        plt.legend()
+    
+        plt.tight_layout()
+        plt.savefig('obj1_ukf_predictions.pdf')
+        # plt.show()
