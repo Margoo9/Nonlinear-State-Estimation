@@ -72,7 +72,7 @@ def pend_slice(observed_pend, true_state_pend, pendulum_equations, pendulum_solv
     print(f'Sampling time of pendulum using slice is: {sampling_time}')
 
     # return trace_slice, observed_pend, predictions, rms, true_state_pend
-    return predictions, sampling_time
+    return predictions, sampling_time, trace_slice
 
 
 def pend_metropolis(observed_pend, true_state_pend, pendulum_equations, pendulum_solved, t_pend, theta_pend, init_point_pendulum):
@@ -134,7 +134,7 @@ def pend_metropolis(observed_pend, true_state_pend, pendulum_equations, pendulum
     print(f'Sampling time of pendulum using Metropolis is: {sampling_time}')
 
     # return trace_slice, observed_pend, predictions, rms, true_state_pend
-    return predictions, sampling_time
+    return predictions, sampling_time, trace_metropolis
 
 
 def pend_nuts(observed_pend, true_state_pend, pendulum_equations, pendulum_solved, t_pend, theta_pend, init_point_pendulum):
@@ -200,4 +200,4 @@ def pend_nuts(observed_pend, true_state_pend, pendulum_equations, pendulum_solve
     print(f'Sampling time of pendulum using NUTS is: {sampling_time}')
 
     # return trace_slice, observed_pend, predictions, rms, true_state_pend
-    return predictions, sampling_time
+    return predictions, sampling_time, trace_nuts
