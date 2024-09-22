@@ -1,6 +1,8 @@
 import numpy as np
 
 
+num_runs = 10
+
 # pendulum params
 init_point_pendulum = [0.75 * np.pi, 0.0]
 number_of_points_pendulum = 100
