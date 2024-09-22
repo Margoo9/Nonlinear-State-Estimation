@@ -85,4 +85,4 @@ def lv_ukf(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, 
     plt.savefig('obj2_ukf_predictions.pdf')
 
     # plt.show()
-    return predictions, sampling_time
+    return predictions, sampling_time, None
