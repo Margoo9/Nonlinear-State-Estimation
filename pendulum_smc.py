@@ -54,4 +54,4 @@ def pend_smc(observed_pend, true_state_pend, pendulum_equations, pendulum_solved
     print(f'Sampling time of pendulum using SMC is: {sampling_time}')
 
     # return observed_pend, predictions, rms
-    return predictions, sampling_time
+    return predictions, sampling_time, idata_lv
