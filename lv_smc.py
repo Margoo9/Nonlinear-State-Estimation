@@ -54,4 +54,4 @@ def lv_smc(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, 
     rms = mean_squared_error(true_state_lv, predictions, squared=False)
     print(f'RMSE of lotka-volterra predictions using SMC: {rms}')
     print(f'Sampling time of lotka-volterra using SMC is: {sampling_time}')
-    return predictions, sampling_time
+    return predictions, sampling_time, idata_lv
