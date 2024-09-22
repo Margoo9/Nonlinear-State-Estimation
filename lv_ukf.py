@@ -40,7 +40,7 @@ def lv_ukf(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, 
     # points = MerweScaledSigmaPoints(2, alpha=1e-3, beta=2., kappa=1.0, sqrt_method=cholesky_func)
     points = MerweScaledSigmaPoints(2, alpha=0.1, beta=2., kappa=0.0, sqrt_method=cholesky_func)
     ukf = UKF(dim_x=2, dim_z=2, fx=f_cv, hx=h_cv, dt=0.1, points=points)
-    ukf.P = np.diag([10, 10])  # Initialize with larger values
+    ukf.P = np.diag([10, 10])  
     ukf.x = np.array(init_point_lv)
     ukf.R = np.diag([measurement_noise_std ** 2, measurement_noise_std ** 2])
     # ukf.Q = Q_discrete_white_noise(dim=2, dt=dt, var=10, block_size=1)
