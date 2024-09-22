@@ -87,4 +87,4 @@ def pend_ukf(observed_pend, true_state_pend, pendulum_equations, pendulum_solved
     plt.savefig('obj1_ukf_predictions.pdf')
     # plt.show()
 
-    return predictions, sampling_time
+    return predictions, sampling_time, None
