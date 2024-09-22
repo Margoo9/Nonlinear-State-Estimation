@@ -85,7 +85,7 @@ def lv_slice(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv
     print(f'RMSE of lotka-volterra predictions using Slice: {rms}')
     print(f'Sampling time of lotka-volterra using Slice is: {sampling_time}')
 
-    return predictions, sampling_time
+    return predictions, sampling_time, trace_slice
 
 
 def lv_metropolis(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
@@ -158,7 +158,7 @@ def lv_metropolis(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, the
     rms = mean_squared_error(true_state_lv, predictions, squared=False)
     print(f'RMSE of lotka-volterra predictions using Metropolis: {rms}')
     print(f'Sampling time of lotka-volterra using Metropolis is: {sampling_time}')
-    return predictions, sampling_time
+    return predictions, sampling_time, trace_metropolis
 
 
 def lv_nuts(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
@@ -239,4 +239,4 @@ def lv_nuts(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv,
     rms = mean_squared_error(true_state_lv, predictions, squared=False)
     print(f'RMSE of lotka-volterra predictions using NUTS: {rms}')
     print(f'Sampling time of lotka-volterra using NUTS is: {sampling_time}')
-    return predictions, sampling_time
+    return predictions, sampling_time, trace_nuts
