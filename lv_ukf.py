@@ -14,13 +14,13 @@ import time
 
 def lv_ukf(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
     alpha, beta, gamma, delta = theta_lv
-    def cholesky_func(x):
+    def cholesky_func(matrix):
         try:
-            result = scipy.linalg.cholesky(x)
+            res = scipy.linalg.cholesky(matrix)
         except scipy.linalg.LinAlgError:
-            x = (x + x.T)/2
-            result = scipy.linalg.cholesky(x)
-        return result
+            matrix = (matrix + matrix.T)/2
+            res = scipy.linalg.cholesky(matrix)
+        return res
 
     theta_values = true_state_lv[:, 0]
     omega_values = true_state_lv[:, 1]
