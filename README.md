@@ -39,6 +39,8 @@ An example of such plots are shown below:
 2. ![](obj2_posterior_nuts.pdf)
 3. ![](obj2_nuts_predictions.pdf)
 
+![](obj2_nuts_predictions.pdf)
+
 
 The same plots are obtained with the SMC algorithm. 
 The result with the UKF is just one plot with final predictions.
