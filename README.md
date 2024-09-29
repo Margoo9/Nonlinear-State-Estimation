@@ -35,11 +35,10 @@ For each MCMC algorithm, there are 3 generated plots saved in *.pdf format:
 
 An example of such plots are shown below:
 
-1. ![](obj2_trace_nuts.pdf)
-2. ![](obj2_posterior_nuts.pdf)
-3. ![](obj2_nuts_predictions.pdf)
+1. ![](obj2_trace_nuts.png)
+2. ![](obj2_posterior_nuts.png)
+3. ![](obj2_nuts_predictions.png)
 
-![](obj2_nuts_predictions.pdf)
 
 
 The same plots are obtained with the SMC algorithm. 
