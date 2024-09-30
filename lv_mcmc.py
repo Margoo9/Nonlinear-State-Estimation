@@ -161,7 +161,14 @@ def lv_metropolis(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, the
     return predictions, sampling_time, trace_metropolis
 
 
-def lv_nuts(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
+def lv_nuts(observed_lv, true_state_lv, lv_equations_old, lv_solved, t_lv, theta_lv, init_point_lv):
+    def lv_equations(X, t, theta_lv):
+        alpha_lv = theta_lv[0]
+        beta_lv = theta_lv[1]
+        gamma_lv = theta_lv[2]
+        delta_lv = theta_lv[3]
+        return [alpha_lv * X[0] - beta_lv * X[0] * X[1], -gamma_lv * X[1] + delta_lv * beta_lv * X[0] * X[1]]
+
     ode_model = DifferentialEquation(
         func=lv_equations, times=t_lv, n_states=2, n_theta=4, t0=0
     )
@@ -170,7 +177,7 @@ def lv_nuts(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv,
 
     def ode_model_resid(theta_lv):
         return (
-                observed_lv - odeint(func=lv_equations, y0=theta[-2:], t=t_lv, args=(theta_lv,))
+                observed_lv - odeint(func=lv_equations, y0=init_point_lv, t=t_lv, args=(theta_lv,))
         ).flatten()
 
     results = least_squares(ode_model_resid, x0=theta_lv)
