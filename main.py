@@ -14,6 +14,7 @@ from pendulum_ukf import pend_ukf
 import matplotlib.pyplot as plt
 import numpy as np
 from multiprocessing import freeze_support, Pool
+from concurrent.futures import ProcessPoolExecutor
 import arviz as az
 import pymc as pm
 
@@ -21,11 +22,11 @@ import pymc as pm
 theta_pend = [b, c]
 theta_lv = [alpha, beta, gamma, delta]
 
+
 algorithms = [
     lv_slice, lv_metropolis, lv_nuts, lv_smc, lv_ukf,
     pend_slice, pend_metropolis, pend_nuts, pend_smc, pend_ukf
 ]
-
 
 # Pendulum
 true_state_pend = pendulum_solved(None, theta_pend)
@@ -62,7 +63,8 @@ def run_algorithm(algorithm, true_state, observed_data, theta, num_runs):
 
     mean_rmse = np.mean(rmse_list)
     mean_predictions = np.mean(np.array(predictions_list), axis=0)
-    mean_trace = np.mean(np.array(trace_list), axis=0)
+    valid_traces = [t for t in trace_list if t is not None]
+    mean_trace = np.mean(np.array(valid_traces), axis=0) if valid_traces else None
     mean_sampling_time = np.mean(
         sampling_time_list) if sampling_time_list else None
 
@@ -79,10 +81,22 @@ if __name__ == '__main__':
 
     file_created = False
 
-    with Pool() as pool:
-        results = pool.starmap(run_algorithm, [
-            (algorithm, true_state_pend, observed_pend, theta_pend, num_runs) if "pend" in algorithm.__name__ else (
-            algorithm, true_state_lv, observed_lv, theta_lv, num_runs) for algorithm in algorithms])
+    # Use ProcessPoolExecutor instead of Pool
+    with ProcessPoolExecutor() as executor:
+        futures = [
+            executor.submit(
+                run_algorithm,
+                algorithm,
+                true_state_pend if "pend" in algorithm.__name__ else true_state_lv,
+                observed_pend if "pend" in algorithm.__name__ else observed_lv,
+                theta_pend if "pend" in algorithm.__name__ else theta_lv,
+                num_runs
+            )
+            for algorithm in algorithms
+        ]
+
+        # Collect results
+        results = [future.result() for future in futures]
 
     for i, result in enumerate(results):
         mean_rmse, mean_predictions, mean_sampling_time, mean_trace = result
@@ -141,9 +155,8 @@ if __name__ == '__main__':
 
         if not file_created:
             with open("rmse_t.txt", "w") as file:
-                file.write(str(algorithm_name) + ": RMSE = " + str(mean_rmse) + "   |   średni czas:" + "{mean_sampling_time]" + "\n")
+                file.write(str(algorithm_name) + ": RMSE = " + str(mean_rmse) + "   |   średni czas:" + "{mean_sampling_time}" + "\n")
             file_created = True
         else:
             with open("rmse_t.txt", "a") as file:
-                file.write(str(algorithm_name) + ": RMSE = " + str(mean_rmse) + "   |   średni czas:" + "{mean_sampling_time]" + "\n")
-
+                file.write(str(algorithm_name) + ": RMSE = " + str(mean_rmse) + "   |   średni czas:" + "{mean_sampling_time}" + "\n")
