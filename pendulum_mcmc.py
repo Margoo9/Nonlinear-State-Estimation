@@ -54,15 +54,15 @@ def pend_slice(observed_pend, true_state_pend, pendulum_equations, pendulum_solv
     ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
     ax1.plot(predictions[:, 0], label='Estymata - próbkowanie przekrojów')
     ax1.legend(loc='upper right')
-    ax1.set_ylabel('Kąt odchylenia')
+    ax1.set_ylabel('Kąt odchylenia [rad]')
 
     ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
     ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - próbkowanie przekrojów')
 
-    plt.xlabel('Czas')
+    plt.xlabel('Czas [s]')
     ax2.legend(loc='upper right')
-    ax2.set_ylabel('Prędkość kątowa')
+    ax2.set_ylabel('Prędkość kątowa [rad/s]')
     plt.savefig('obj1_slice_predictions.pdf')
 
     # plt.show()
@@ -116,15 +116,15 @@ def pend_metropolis(observed_pend, true_state_pend, pendulum_equations, pendulum
     ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
     ax1.plot(predictions[:, 0], label='Estymata - algorytm Metropolisa')
     ax1.legend(loc='upper right')
-    ax1.set_ylabel('Kąt odchylenia')
+    ax1.set_ylabel('Kąt odchylenia [rad]')
 
     ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
     ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - algorytm Metropolisa')
 
-    plt.xlabel('Czas')
+    plt.xlabel('Czas [s]')
     ax2.legend(loc='upper right')
-    ax2.set_ylabel('Prędkość kątowa')
+    ax2.set_ylabel('Prędkość kątowa [rad/s]')
     plt.savefig('obj1_metropolis_predictions.pdf')
 
     # plt.show()
@@ -182,15 +182,15 @@ def pend_nuts(observed_pend, true_state_pend, pendulum_equations, pendulum_solve
     ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
     ax1.plot(predictions[:, 0], label='Estymata - algorytm NUTS')
     ax1.legend(loc='upper right')
-    ax1.set_ylabel('Kąt odchylenia')
+    ax1.set_ylabel('Kąt odchylenia [rad]')
 
     ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
     ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - algorytm NUTS')
 
-    plt.xlabel('Czas')
+    plt.xlabel('Czas [s]')
     ax2.legend(loc='upper right')
-    ax2.set_ylabel('Prędkość kątowa')
+    ax2.set_ylabel('Prędkość kątowa [rad/s]')
     plt.savefig('obj1_nuts_predictions.pdf')
 
     # plt.show()
