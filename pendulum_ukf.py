@@ -72,15 +72,15 @@ def pend_ukf(observed_pend, true_state_pend, pendulum_equations, pendulum_solved
     plt.plot(t_pend, kf_theta_values, label='Estymata - algorytm UKF')
     plt.plot(t_pend, observed_pend[:, 0], 'x', label='Pomiary')
     plt.xlabel('Czas')
-    plt.ylabel('Kąt odchylenia')
+    plt.ylabel('Kąt odchylenia [rad]')
     plt.legend()
 
     plt.subplot(2, 1, 2)
     plt.plot(t_pend, true_state_pend[:, 1], 'g', label='Modelowe wartości')
     plt.plot(t_pend, kf_omega_values, label='Estymata - algorytm UKF')
     plt.plot(t_pend, observed_pend[:, 1], 'x', label='Pomiary')
-    plt.xlabel('Czas')
-    plt.ylabel('Prędkość kątowa')
+    plt.xlabel('Czas [s]')
+    plt.ylabel('Prędkość kątowa [rad/s]')
     plt.legend()
 
     plt.tight_layout()
