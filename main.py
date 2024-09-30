@@ -106,15 +106,15 @@ if __name__ == '__main__':
             ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
             ax1.plot(t_pend, mean_predictions[:, 0], label=f"Estymata - algorytm {algorithm_name}")
             ax1.legend(loc='upper right')
-            ax1.set_ylabel('Kąt odchylenia')
+            ax1.set_ylabel('Kąt odchylenia [rad]')
 
             ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
             ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
             ax2.plot(t_pend, mean_predictions[:, 0], label=f'Estymata - algorytm {algorithm_name}')
 
-            plt.xlabel('Czas')
+            plt.xlabel('Czas [s]')
             ax2.legend(loc='upper right')
-            ax2.set_ylabel('Prędkość kątowa')
+            ax2.set_ylabel('Prędkość kątowa [rad/s]')
             plt.savefig(f'obj1_{algorithm_name}_predictions.pdf')
         else:
             fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
@@ -128,7 +128,7 @@ if __name__ == '__main__':
             ax2.plot(true_state_lv[:, 1], 'g', label='Modelowe wartości')
             ax2.plot(t_lv, mean_predictions[:, 0], label=f'Estymata - algorytm {algorithm_name}')
 
-            plt.xlabel('Czas')
+            plt.xlabel('Czas [tygodnie]')
             ax2.legend(loc='upper right')
             ax2.set_ylabel('Liczba drapieżników')
             plt.savefig(f'obj2_{algorithm_name}_predictions.pdf')
@@ -144,6 +144,6 @@ if __name__ == '__main__':
                 file.write(str(algorithm_name) + ": RMSE = " + str(mean_rmse) + "   |   średni czas:" + "{mean_sampling_time]" + "\n")
             file_created = True
         else:
-            with open("my_file.txt", "a") as file:
+            with open("rmse_t.txt", "a") as file:
                 file.write(str(algorithm_name) + ": RMSE = " + str(mean_rmse) + "   |   średni czas:" + "{mean_sampling_time]" + "\n")
 
