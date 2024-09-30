@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pymc as pm
 from sklearn.metrics import mean_squared_error
+from scipy.integrate import odeint
 import time
 from multiprocessing import freeze_support
 
@@ -10,8 +11,17 @@ from multiprocessing import freeze_support
 # np.random.seed(42)
 
 
-def pend_smc(observed_pend, true_state_pend, pendulum_equations, pendulum_solved, t_pend, theta_pend, init_point_pendulum):
+def pend_smc(observed_pend, true_state_pend, pendulum_equations, pendulum_solved_old, t_pend, theta_pend, init_point_pendulum):
     start_time = time.time()
+
+    def pendulum_solved(rng, b, c, size=None, *args):
+        def pendulum_eq(y, t, b, c):
+            theta, omega = y
+            dydt = [omega, -b * omega - c * np.sin(theta)]
+            return dydt
+
+        y0 = init_point_pendulum
+        return odeint(pendulum_eq, y0, t_pend, args=(b, c))
 
     with pm.Model() as model_lv:
 
