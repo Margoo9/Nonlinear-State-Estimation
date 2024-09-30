@@ -44,7 +44,7 @@ def lv_smc(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, 
     ax2.plot(true_state_lv[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata SMC')
 
-    plt.xlabel('Czas')
+    plt.xlabel('Czas [tygodnie]')
     ax2.legend(loc='upper right')
     ax2.set_ylabel('Liczba drapieżników')
     plt.savefig('obj2_smc_predictions.pdf')
