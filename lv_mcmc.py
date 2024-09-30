@@ -17,7 +17,7 @@ import time
 def lv_slice(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
     start_time = time.time()
 
-    def ode_model_resid(observed_lv, lv_equations, t_lv, theta_lv):
+    def ode_model_resid(theta_lv):
         return (
                 observed_lv - odeint(func=lv_equations, y0=theta_lv[-2:], t=t_lv, args=(theta_lv,))
         ).flatten()
@@ -91,7 +91,7 @@ def lv_slice(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv
 def lv_metropolis(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
     start_time = time.time()
 
-    def ode_model_resid(observed_lv, lv_equations, t_lv, theta_lv):
+    def ode_model_resid(theta_lv):
         return (
                 observed_lv - odeint(func=lv_equations, y0=theta_lv[-2:], t=t_lv, args=(theta_lv,))
         ).flatten()
