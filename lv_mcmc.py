@@ -74,7 +74,7 @@ def lv_slice(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv
     ax2.plot(true_state_lv[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - próbkowanie przekrojów')
 
-    plt.xlabel('Czas')
+    plt.xlabel('Czas [tygodnie]')
     ax2.legend(loc='upper right')
     ax2.set_ylabel('Liczba drapieżników')
     plt.savefig('obj2_slice_predictions.pdf')
@@ -148,7 +148,7 @@ def lv_metropolis(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, the
     ax2.plot(true_state_lv[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - algorytm Metropoolisa')
 
-    plt.xlabel('Czas')
+    plt.xlabel('Czas [tygodnie]')
     ax2.legend(loc='upper right')
     ax2.set_ylabel('Liczba drapieżników')
     plt.savefig('obj2_metropolis_predictions.pdf')
@@ -229,7 +229,7 @@ def lv_nuts(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv,
     ax2.plot(true_state_lv[:, 1], 'g', label='Modelowe wartości')
     ax2.plot(predictions[:, 1], label='Estymata - algorytm NUTS')
 
-    plt.xlabel('Czas')
+    plt.xlabel('Czas [tygodnie]')
     ax2.legend(loc='upper right')
     ax2.set_ylabel('Liczba drapieżników')
     plt.savefig('obj2_nuts_predictions.pdf')
