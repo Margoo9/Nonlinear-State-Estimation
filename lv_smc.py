@@ -4,13 +4,29 @@ from multiprocessing import freeze_support
 import pymc as pm
 from sklearn.metrics import mean_squared_error
 import time
+from scipy.integrate import odeint
+import numpy as np
 
 
 # np.random.seed(42)
 
-
-def lv_smc(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, init_point_lv):
+def lv_smc(observed_lv, true_state_lv, lv_equations_old, lv_solved_old, t_lv, theta_lv, init_point_lv):
     start_time = time.time()
+
+    def lv_equations(X, t, theta_lv):
+        alpha_lv, beta_lv, gamma_lv, delta_lv = theta_lv
+        return np.array(
+            [alpha_lv * X[0] - beta_lv * X[0] * X[1], -gamma_lv * X[1] + delta_lv * beta_lv * X[0] * X[1]]).flatten()
+
+    def lv_solved(rng, alpha, beta, gamma, delta, size=None, *args):
+        theta_lv = (alpha, beta, gamma, delta)
+        y0 = np.array(init_point_lv).flatten()
+        sol = odeint(lv_equations, y0=y0, t=t_lv, args=(theta_lv,))
+
+        if sol.ndim == 1:
+            sol = sol.reshape(-1, len(y0))
+
+        return sol
 
     with pm.Model() as model_lv:
         alpha = pm.HalfNormal("alpha", 1.0)
@@ -32,7 +48,8 @@ def lv_smc(observed_lv, true_state_lv, lv_equations, lv_solved, t_lv, theta_lv, 
     # plt.show()
 
     posterior = idata_lv.posterior.stack(samples=("draw", "chain"))
-    predictions = lv_solved(None, posterior["alpha"].mean(), posterior["beta"].mean(), posterior["gamma"].mean(), posterior["delta"].mean())
+    predictions = lv_solved(None, posterior["alpha"].mean(), posterior["beta"].mean(), posterior["gamma"].mean(),
+                            posterior["delta"].mean())
     fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
     ax1.plot(observed_lv[:, 0], 'x', label='Pomiary')
     ax1.plot(true_state_lv[:, 0], 'b', label='Modelowe wartości')
