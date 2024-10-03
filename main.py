@@ -24,8 +24,7 @@ theta_lv = [alpha, beta, gamma, delta]
 
 
 algorithms = [
-    lv_slice, lv_metropolis, lv_nuts, lv_smc, lv_ukf,
-    pend_slice, pend_metropolis, pend_nuts, pend_smc, pend_ukf
+    pend_ukf
 ]
 
 # Pendulum
@@ -118,13 +117,13 @@ if __name__ == '__main__':
             fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
             ax1.plot(observed_pend[:, 0], 'x', label='Pomiary')
             ax1.plot(true_state_pend[:, 0], 'b', label='Modelowe wartości')
-            ax1.plot(t_pend, mean_predictions[:, 0], label=f"Estymata - algorytm {algorithm_name}")
+            ax1.plot(mean_predictions[:, 0], label=f"Estymata - algorytm {algorithm_name}")
             ax1.legend(loc='upper right')
             ax1.set_ylabel('Kąt odchylenia [rad]')
 
             ax2.plot(observed_pend[:, 1], 'x', label='Pomiary')
             ax2.plot(true_state_pend[:, 1], 'g', label='Modelowe wartości')
-            ax2.plot(t_pend, mean_predictions[:, 0], label=f'Estymata - algorytm {algorithm_name}')
+            ax2.plot(mean_predictions[:, 0], label=f'Estymata - algorytm {algorithm_name}')
 
             plt.xlabel('Czas [s]')
             ax2.legend(loc='upper right')
@@ -134,13 +133,13 @@ if __name__ == '__main__':
             fig, (ax1, ax2) = plt.subplots(2, figsize=(12, 8))
             ax1.plot(observed_lv[:, 0], 'x', label='Pomiary')
             ax1.plot(true_state_lv[:, 0], 'b', label='Modelowe wartości')
-            ax1.plot(t_lv, mean_predictions[:, 0], label=f"Estymata - algorytm {algorithm_name}")
+            ax1.plot(mean_predictions[:, 0], label=f"Estymata - algorytm {algorithm_name}")
             ax1.legend(loc='upper right')
             ax1.set_ylabel('Liczba ofiar')
 
             ax2.plot(observed_lv[:, 1], 'x', label='Pomiary')
             ax2.plot(true_state_lv[:, 1], 'g', label='Modelowe wartości')
-            ax2.plot(t_lv, mean_predictions[:, 0], label=f'Estymata - algorytm {algorithm_name}')
+            ax2.plot(mean_predictions[:, 0], label=f'Estymata - algorytm {algorithm_name}')
 
             plt.xlabel('Czas [tygodnie]')
             ax2.legend(loc='upper right')
